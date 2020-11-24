@@ -1,3 +1,4 @@
+import { observer } from 'mobx-react-lite';
 import React from 'react';
 import { Button, Container, Menu } from 'semantic-ui-react';
 
@@ -22,4 +23,4 @@ const NavBar: React.FC<IProps> = ({openCreateForm}) => {
   );
 };
 
-export default NavBar;
+export default observer(NavBar);

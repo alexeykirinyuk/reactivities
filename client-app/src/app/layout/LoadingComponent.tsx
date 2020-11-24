@@ -1,3 +1,4 @@
+import { observer } from "mobx-react-lite";
 import React, { FC } from "react";
 import { Dimmer, Loader } from "semantic-ui-react";
 
@@ -12,4 +13,4 @@ const LoadingComponent: FC<{inverted?: boolean, content?: string}> = ({
   );
 };
 
-export default LoadingComponent;
+export default observer(LoadingComponent);
