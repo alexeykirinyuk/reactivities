@@ -1,8 +1,16 @@
-import { action, makeObservable, observable, computed } from "mobx";
+import {
+  action,
+  makeObservable,
+  observable,
+  computed,
+  configure,
+  runInAction,
+} from "mobx";
 import { createContext, SyntheticEvent } from "react";
 import agent from "../api/agent";
 import { IActivity } from "../models/activity";
 
+configure({ enforceActions: "always" });
 class ActivityStore {
   @observable public activityRegistry = new Map<string, IActivity>();
   @observable public selectedActivity: IActivity | undefined;
@@ -26,15 +34,18 @@ class ActivityStore {
 
     try {
       const activities = await agent.Activities.list();
-
-      activities.forEach((activity) => {
-        activity.date = activity.date.split(".")[0];
-        this.activityRegistry.set(activity.id, activity);
+      runInAction(() => {
+        activities.forEach((activity) => {
+          activity.date = activity.date.split(".")[0];
+          this.activityRegistry.set(activity.id, activity);
+        });
       });
     } catch (error) {
       console.log(error);
     } finally {
-      this.loadingInitial = false;
+      runInAction(() => {
+        this.loadingInitial = false;
+      });
     }
   };
 
@@ -47,12 +58,16 @@ class ActivityStore {
     this.submitting = true;
     try {
       await agent.Activities.create(activity);
-      this.activityRegistry.set(activity.id, activity);
-      this.editMode = false;
+      runInAction(() => {
+        this.activityRegistry.set(activity.id, activity);
+        this.editMode = false;
+      });
     } catch (error) {
       console.log(error);
     } finally {
-      this.submitting = false;
+      runInAction(() => {
+        this.submitting = false;
+      });
     }
   };
 
@@ -60,13 +75,17 @@ class ActivityStore {
     this.submitting = true;
     try {
       await agent.Activities.update(activity);
-      this.activityRegistry.set(activity.id, activity);
-      this.selectedActivity = activity;
-      this.editMode = false;
+      runInAction(() => {
+        this.activityRegistry.set(activity.id, activity);
+        this.selectedActivity = activity;
+        this.editMode = false;
+      });
     } catch (err) {
       console.log(err);
     } finally {
-      this.submitting = false;
+      runInAction(() => {
+        this.submitting = false;
+      });
     }
   };
 
@@ -78,11 +97,15 @@ class ActivityStore {
     this.target = event.currentTarget.name;
     try {
       await agent.Activities.delete(id);
-      this.activityRegistry.delete(id);
+      runInAction(() => {
+        this.activityRegistry.delete(id);
+      });
     } catch (err) {
       console.log(err);
     } finally {
-      this.submitting = false;
+      runInAction(() => {
+        this.submitting = false;
+      });
     }
   };
 

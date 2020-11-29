@@ -1,8 +1,6 @@
 import React, {
-  useState,
   useEffect,
   Fragment,
-  SyntheticEvent,
   useContext,
 } from "react";
 import "semantic-ui-css/semantic.min.css";
