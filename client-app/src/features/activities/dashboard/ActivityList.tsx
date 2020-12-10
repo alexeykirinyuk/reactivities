@@ -1,18 +1,17 @@
-import { observer } from "mobx-react-lite";
 import React, { useContext } from "react";
+import { Item, Button, Label, Segment } from "semantic-ui-react";
+import { observer } from "mobx-react-lite";
+import ActivityStore from "../../../app/stores/activityStore";
 import { Link } from "react-router-dom";
-import { Button, Item, Label, Segment } from "semantic-ui-react";
-import { ActivityStoreCtx } from "../../../app/stores/activityStore";
 
 const ActivityList: React.FC = () => {
-  const activityStore = useContext(ActivityStoreCtx);
+  const activityStore = useContext(ActivityStore);
   const {
     activitiesByDate,
-    submitting,
     deleteActivity,
+    submitting,
     target,
   } = activityStore;
-
   return (
     <Segment clearing>
       <Item.Group divided>
@@ -29,19 +28,19 @@ const ActivityList: React.FC = () => {
               </Item.Description>
               <Item.Extra>
                 <Button
-                  name={activity.id}
-                  onClick={(e) => deleteActivity(e, activity.id)}
-                  floated="right"
-                  content="Delete"
-                  color="red"
-                  loading={target === activity.id && submitting}
-                />
-                <Button
                   as={Link}
                   to={`/activities/${activity.id}`}
                   floated="right"
                   content="View"
                   color="blue"
+                />
+                <Button
+                  name={activity.id}
+                  loading={target === activity.id && submitting}
+                  onClick={(e) => deleteActivity(e, activity.id)}
+                  floated="right"
+                  content="Delete"
+                  color="red"
                 />
                 <Label basic content={activity.category} />
               </Item.Extra>

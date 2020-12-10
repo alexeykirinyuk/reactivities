@@ -1,109 +1,129 @@
-import React, { FormEvent, FC, useState, useContext } from "react";
-import { Button, Form, Segment } from "semantic-ui-react";
+import React, { useState, FormEvent, useContext, useEffect } from "react";
+import { Segment, Form, Button } from "semantic-ui-react";
 import { IActivity } from "../../../app/models/activity";
 import { v4 as uuid } from "uuid";
-import { ActivityStoreCtx } from "../../../app/stores/activityStore";
+import ActivityStore from "../../../app/stores/activityStore";
 import { observer } from "mobx-react-lite";
+import { RouteComponentProps } from "react-router";
 
-interface IProps {
-  activity: IActivity | undefined;
+interface DetailParams {
+  id: string;
 }
 
-const ActivityForm: FC<IProps> = ({
-  activity: initialFormState,
+const ActivityForm: React.FC<RouteComponentProps<DetailParams>> = ({
+  match,
+  history,
 }) => {
-  const activityStore = useContext(ActivityStoreCtx);
-  const {submitting, editActivity, createActivity, cancelFormOpen} = activityStore;
+  const activityStore = useContext(ActivityStore);
+  const {
+    createActivity,
+    editActivity,
+    submitting,
+    activity: initialFormState,
+    loadActivity,
+    clearActivity,
+  } = activityStore;
 
-  const initializeForm = (): IActivity => {
-    if (initialFormState) {
-      return initialFormState;
-    } else {
-      return {
-        id: "",
-        title: "",
-        category: "",
-        date: "",
-        city: "",
-        venue: "",
-        description: "",
-      };
+  const [activity, setActivity] = useState<IActivity>({
+    id: "",
+    title: "",
+    category: "",
+    description: "",
+    date: "",
+    city: "",
+    venue: "",
+  });
+
+  useEffect(() => {
+    if (match.params.id && activity.id.length === 0) {
+      loadActivity(match.params.id).then(
+        () => initialFormState && setActivity(initialFormState)
+      );
     }
-  };
-
-  const [activity, setActivity] = useState<IActivity>(initializeForm);
-
-  const handleImportChange = (
-    event: FormEvent<HTMLInputElement | HTMLTextAreaElement>
-  ): void => {
-    const { name, value } = event.currentTarget;
-    setActivity({ ...activity, [name]: value });
-  };
+    return () => {
+      clearActivity();
+    };
+  }, [
+    loadActivity,
+    clearActivity,
+    match.params.id,
+    initialFormState,
+    activity.id.length,
+  ]);
 
   const handleSubmit = () => {
-    console.log(activity);
-
     if (activity.id.length === 0) {
-      const newActivity = {
+      let newActivity = {
         ...activity,
         id: uuid(),
       };
-      createActivity(newActivity);
+      createActivity(newActivity).then(() =>
+        history.push(`/activities/${newActivity.id}`)
+      );
     } else {
-      editActivity(activity);
+      editActivity(activity).then(() =>
+        history.push(`/activities/${activity.id}`)
+      );
     }
+  };
+
+  const handleInputChange = (
+    event: FormEvent<HTMLInputElement | HTMLTextAreaElement>
+  ) => {
+    const { name, value } = event.currentTarget;
+    setActivity({ ...activity, [name]: value });
   };
 
   return (
     <Segment clearing>
       <Form onSubmit={handleSubmit}>
         <Form.Input
+          onChange={handleInputChange}
           name="title"
           placeholder="Title"
           value={activity.title}
-          onChange={handleImportChange}
         />
         <Form.TextArea
+          onChange={handleInputChange}
           name="description"
           rows={2}
           placeholder="Description"
           value={activity.description}
-          onChange={handleImportChange}
         />
         <Form.Input
+          onChange={handleInputChange}
           name="category"
           placeholder="Category"
           value={activity.category}
-          onChange={handleImportChange}
         />
         <Form.Input
+          onChange={handleInputChange}
           name="date"
-          placeholder="Date"
           type="datetime-local"
+          placeholder="Date"
           value={activity.date}
-          onChange={handleImportChange}
         />
         <Form.Input
+          onChange={handleInputChange}
           name="city"
           placeholder="City"
           value={activity.city}
-          onChange={handleImportChange}
         />
         <Form.Input
+          onChange={handleInputChange}
           name="venue"
           placeholder="Venue"
           value={activity.venue}
-          onChange={handleImportChange}
         />
         <Button
+          loading={submitting}
           floated="right"
           positive
           type="submit"
           content="Submit"
-          loading={submitting}
         />
         <Button
-          onClick={cancelFormOpen}
+          onClick={() => history.push("/activities")}
           floated="right"
           type="button"
           content="Cancel"

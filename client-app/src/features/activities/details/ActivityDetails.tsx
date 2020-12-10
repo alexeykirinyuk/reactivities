@@ -1,29 +1,28 @@
-import { observer } from "mobx-react-lite";
 import React, { useContext, useEffect } from "react";
-import { RouteComponentProps } from "react-router-dom";
-import { Button, Card, Image } from "semantic-ui-react";
+import { Card, Image, Button } from "semantic-ui-react";
+import ActivityStore from "../../../app/stores/activityStore";
+import { observer } from "mobx-react-lite";
+import { RouteComponentProps } from "react-router";
 import LoadingComponent from "../../../app/layout/LoadingComponent";
-import { ActivityStoreCtx } from "../../../app/stores/activityStore";
+import { Link } from "react-router-dom";
 
-interface IRouteParams {
+interface DetailParams {
   id: string;
 }
 
-export const ActivityDetails: React.FC<RouteComponentProps<IRouteParams>> = ({match}) => {
-  const activityStore = useContext(ActivityStoreCtx);
-  const {
-    activity,
-    openEditForm,
-    cancelSelectedActivity,
-    loadActivity,
-    loadingInitial
-  } = activityStore;
+const ActivityDetails: React.FC<RouteComponentProps<DetailParams>> = ({
+  match,
+  history,
+}) => {
+  const activityStore = useContext(ActivityStore);
+  const { activity, loadActivity, loadingInitial } = activityStore;
 
   useEffect(() => {
     loadActivity(match.params.id);
   }, [loadActivity, match.params.id]);
 
-  if (loadingInitial || !activity) return <LoadingComponent content="Loading activity..." />
+  if (loadingInitial || !activity)
+    return <LoadingComponent content="Loading activity..." />;
 
   return (
     <Card fluid>
@@ -35,20 +34,21 @@ export const ActivityDetails: React.FC<RouteComponentProps<IRouteParams>> = ({ma
       <Card.Content>
         <Card.Header>{activity!.title}</Card.Header>
         <Card.Meta>
-          <span className="date">{activity!.date}</span>
+          <span>{activity!.date}</span>
         </Card.Meta>
         <Card.Description>{activity!.description}</Card.Description>
       </Card.Content>
       <Card.Content extra>
         <Button.Group widths={2}>
           <Button
-            onClick={() => openEditForm(activity!.id)}
+            as={Link}
+            to={`/manage/${activity.id}`}
             basic
             color="blue"
             content="Edit"
           />
           <Button
-            onClick={cancelSelectedActivity}
+            onClick={() => history.push("/activities")}
             basic
             color="grey"
             content="Cancel"
