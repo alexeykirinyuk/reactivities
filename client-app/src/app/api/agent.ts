@@ -28,6 +28,6 @@ const Activities = {
   delete: (id: string) => requests.del(`/activities/${id}`),
 };
 
-export default {
-  Activities,
-};
+const agent = { Activities };
+
+export default agent;
