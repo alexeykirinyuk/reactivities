@@ -5,26 +5,28 @@ import {
   configure,
   runInAction,
   makeObservable,
-} from "mobx";
-import { createContext, SyntheticEvent } from "react";
-import { IActivity } from "../models/activity";
-import agent from "../api/agent";
+} from 'mobx';
+import { createContext, SyntheticEvent } from 'react';
+import { IActivity } from '../models/activity';
+import agent from '../api/agent';
 
-configure({ enforceActions: "always" });
+configure({ enforceActions: 'always' });
 
 class ActivityStore {
   @observable activityRegistry = new Map();
   @observable activity: IActivity | null = null;
   @observable loadingInitial = false;
   @observable submitting = false;
-  @observable target = "";
+  @observable target = '';
 
   constructor() {
     makeObservable(this);
   }
 
   @computed get activitiesByDate() {
-    const sortedActivities = this.groupActivitiesByDates(Array.from(this.activityRegistry.values()));
+    const sortedActivities = this.groupActivitiesByDates(
+      Array.from(this.activityRegistry.values())
+    );
     console.log(sortedActivities);
 
     return sortedActivities;
@@ -34,11 +36,15 @@ class ActivityStore {
     const sortedActivities = activities.sort(
       (a, b) => Date.parse(a.date) - Date.parse(b.date)
     );
-    return Object.entries(sortedActivities.reduce((activities, activity) => {
-      const date = activity.date.split('T')[0];
-      activities[date] = activities[date] ? [...activities[date], activity] : [activity];
-      return activities;
-    }, {} as {[key: string]: IActivity[]}));
+    return Object.entries(
+      sortedActivities.reduce((activities, activity) => {
+        const date = activity.date.split('T')[0];
+        activities[date] = activities[date]
+          ? [...activities[date], activity]
+          : [activity];
+        return activities;
+      }, {} as { [key: string]: IActivity[] })
+    );
   }
 
   @action loadActivities = async () => {
@@ -47,16 +53,16 @@ class ActivityStore {
       const activities = await agent.Activities.list();
       runInAction(() => {
         activities.forEach((activity) => {
-          activity.date = activity.date.split(".")[0];
+          activity.date = activity.date.split('.')[0];
           this.activityRegistry.set(activity.id, activity);
         });
         this.loadingInitial = false;
       });
-      console.log(this.groupActivitiesByDates(activities));
     } catch (error) {
       runInAction(() => {
         this.loadingInitial = false;
       });
+      console.log(error);
     }
   };
 
@@ -76,7 +82,7 @@ class ActivityStore {
         runInAction(() => {
           this.loadingInitial = false;
         });
-        console.log(error);
+        throw error;
       }
     }
   };
@@ -133,12 +139,12 @@ class ActivityStore {
       runInAction(() => {
         this.activityRegistry.delete(id);
         this.submitting = false;
-        this.target = "";
+        this.target = '';
       });
     } catch (error) {
       runInAction(() => {
         this.submitting = false;
-        this.target = "";
+        this.target = '';
       });
       console.log(error);
     }
