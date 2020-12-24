@@ -15,7 +15,7 @@ namespace API.Middleware
 
         public ErrorHandlingMiddleware(RequestDelegate next, ILogger<ErrorHandlingMiddleware> logger)
         {
-            _next = next;
+              _next = next;
             _logger = logger;
         }
 
