@@ -6,29 +6,32 @@ import {
   runInAction,
   makeObservable,
 } from 'mobx';
-import { createContext, SyntheticEvent } from 'react';
+import { SyntheticEvent } from 'react';
 import { IActivity } from '../models/activity';
 import agent from '../api/agent';
 import { history } from '../..';
+import { RootStore } from './rootStore';
 
 configure({ enforceActions: 'always' });
 
-class ActivityStore {
+export default class ActivityStore {
+  rootStore: RootStore;
+
+  constructor(rootStore: RootStore) {
+    makeObservable(this);
+    this.rootStore = rootStore;
+  }
+
   @observable activityRegistry = new Map();
   @observable activity: IActivity | null = null;
   @observable loadingInitial = false;
   @observable submitting = false;
   @observable target = '';
 
-  constructor() {
-    makeObservable(this);
-  }
-
   @computed get activitiesByDate() {
     const sortedActivities = this.groupActivitiesByDates(
       Array.from(this.activityRegistry.values())
     );
-    console.log(sortedActivities);
 
     return sortedActivities;
   }
@@ -158,5 +161,3 @@ class ActivityStore {
     }
   };
 }
-
-export default createContext(new ActivityStore());
