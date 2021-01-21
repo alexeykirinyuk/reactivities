@@ -1,10 +1,11 @@
 using System;
-using System.ComponentModel.DataAnnotations;
 using System.Threading;
 using System.Threading.Tasks;
+using Application.Interfaces;
 using Domain;
 using FluentValidation;
 using MediatR;
+using Microsoft.EntityFrameworkCore;
 using Persistence;
 
 namespace Application.Activities
@@ -44,14 +45,17 @@ namespace Application.Activities
         public sealed class Handler : IRequestHandler<Command>
         {
             private readonly DataContext _context;
+            private readonly IUserAccessor _userAccessor;
 
-            public Handler(DataContext context)
+            public Handler(DataContext context, IUserAccessor userAccessor)
             {
                 _context = context;
+                _userAccessor = userAccessor;
             }
 
             public async Task<Unit> Handle(Command request, CancellationToken cancellationToken)
             {
+                var user = await _context.Users.SingleOrDefaultAsync(u => u.UserName == _userAccessor.GetCurrentUsername());
                 var activity = new Activity
                 {
                     Id = request.Id,
@@ -62,13 +66,21 @@ namespace Application.Activities
                     City = request.City,
                     Venue = request.Venue
                 };
-                _context.Add(activity);
-                var success = await _context.SaveChangesAsync() > 0;
 
-                if (success)
+                _context.Activities.Add(activity);
+
+                var userActivity = new UserActivity
                 {
-                    return Unit.Value;
-                }
+                    AppUser = user,
+                    Activity = activity,
+                    IsHost = true,
+                    DateJoined = DateTime.Now
+                };
+
+                _context.UserActivities.Add(userActivity);
+
+                var success = await _context.SaveChangesAsync() > 0;
+                if (success) return Unit.Value;
 
                 throw new Exception("Problem saving changes");
             }

@@ -1,6 +1,6 @@
 ﻿namespace Domain
 {
-    public sealed class Value
+    public class Value
     {
         public int Id { get; set; }
 

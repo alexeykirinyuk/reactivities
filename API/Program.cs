@@ -30,7 +30,7 @@ namespace API
                 {
                     var context = services.GetRequiredService<DataContext>();
                     await context.Database.MigrateAsync();
-                    
+
                     var userManager = services.GetRequiredService<UserManager<AppUser>>();
                     await Seed.SeedData(context, userManager);
                 }
@@ -47,6 +47,11 @@ namespace API
                 .ConfigureWebHostDefaults(webBuilder =>
                 {
                     webBuilder.UseStartup<Startup>();
+                })
+                .ConfigureLogging(logging =>
+                {
+                    logging.ClearProviders();
+                    logging.AddConsole();
                 });
     }
 }
