@@ -19,6 +19,7 @@ using Persistence;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc.Authorization;
 using AutoMapper;
+using Infrastructure.Photos;
 
 namespace API
 {
@@ -51,8 +52,6 @@ namespace API
             });
             services.AddMediatR(typeof(List.Handler).Assembly);
             services.AddAutoMapper(typeof(ActivityDto));
-
-            services.AddScoped<IJwtGenerator, JwtGenerator>();
 
             services.AddControllers(opts =>
             {
@@ -92,6 +91,10 @@ namespace API
                     policy.Requirements.Add(new IsHostRequirement());
                 });
             });
+
+            services.AddScoped<IJwtGenerator, JwtGenerator>();
+            services.Configure<CloudinarySettings>(Configuration.GetSection("Cloudinary"));
+            services.AddScoped<IPhotoAccessor, PhotoAccessor>();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
